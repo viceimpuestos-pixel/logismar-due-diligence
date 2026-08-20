@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Due Diligence — Logística Marítima del Caribe SAS</title>
+<style>
+  :root{
+    --dark:#1F3864; --mid:#2E5395; --light:#EAF1FB; --card:#FFFFFF;
+    --red:#C00000; --amber:#B8860B; --green:#2E7D32; --gray:#667085;
+    --bg:#F4F7FB; --border:#E2E8F0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#1a1a2e;}
+  header{background:linear-gradient(135deg,var(--dark),var(--mid));color:#fff;padding:28px 32px;}
+  header h1{margin:0 0 4px;font-size:22px;}
+  header p{margin:0;opacity:.85;font-size:13px;}
+  nav{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto;position:sticky;top:0;z-index:10;}
+  nav button{border:none;background:none;padding:14px 16px;font-size:13.5px;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  nav button.active{color:var(--dark);border-bottom-color:var(--mid);}
+  main{max-width:1180px;margin:0 auto;padding:24px;}
+  section{display:none;}
+  section.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2{color:var(--dark);font-size:19px;margin:28px 0 12px;}
+  h2:first-child{margin-top:0;}
+  h3{color:var(--mid);font-size:15px;margin:18px 0 8px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:8px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  .kpi .label{font-size:12px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.02em;}
+  .kpi .value{font-size:22px;font-weight:700;color:var(--dark);margin-top:4px;}
+  .kpi .sub{font-size:12px;color:var(--gray);margin-top:4px;}
+  .flag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .flag.rojo{background:#FDEAEA;color:var(--red);}
+  .flag.amarillo{background:#FFF6E0;color:var(--amber);}
+  .flag.verde{background:#E8F5E9;color:var(--green);}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;font-size:13px;}
+  th{background:var(--dark);color:#fff;text-align:right;padding:8px 10px;font-weight:600;}
+  th:first-child,td:first-child{text-align:left;}
+  td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:#F8FAFD;}
+  .note{font-size:12.5px;color:var(--gray);font-style:italic;margin-top:6px;line-height:1.5;}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;}
+  .panel.highlight{border-left:4px solid var(--mid);background:var(--light);}
+  .panel.danger{border-left:4px solid var(--red);background:#FEF6F6;}
+  ul{margin:8px 0;padding-left:20px;line-height:1.6;font-size:13.5px;}
+  li{margin-bottom:6px;}
+  .chart-wrap{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+  canvas{width:100%;max-width:100%;display:block;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--gray);margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .scenario-toggle{display:flex;gap:8px;margin-bottom:14px;}
+  .scenario-toggle button{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--gray);}
+  .scenario-toggle button.active{background:var(--mid);color:#fff;border-color:var(--mid);}
+  .flow-steps{display:flex;flex-direction:column;gap:0;}
+  .flow-step{display:flex;gap:14px;padding:12px 0;border-left:2px solid var(--border);margin-left:8px;padding-left:20px;position:relative;}
+  .flow-step::before{content:"";position:absolute;left:-7px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--mid);}
+  .flow-step .date{font-size:11.5px;font-weight:700;color:var(--mid);min-width:90px;}
+  .flow-step .desc{font-size:13px;}
+  .flow-step .amt{font-weight:700;color:var(--dark);}
+  footer{text-align:center;padding:24px;color:var(--gray);font-size:12px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Due Diligence — Logística Marítima del Caribe SAS</h1>
+  <p>NIT 900.561.893-1 · Dashboard interactivo · Fase 1 (reconstrucción contable) + proyecciones 36 meses · actualizado 20-ago-2026 <span id="toggleValoracion" title="Mostrar/ocultar valoración" style="cursor:pointer;opacity:.5;padding:2px 6px;">·&nbsp;·&nbsp;·</span></p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<footer>Preparado para PYC Consultoría Integral. Todas las cifras provienen de los 7 auxiliares contables 2020–2026; el balance general fue reconstruido (el archivo original estaba vacío). Ver el informe Fase 1 y el modelo financiero para el detalle transaccional.</footer>
+
+<script>
+const DATA = {"hist": {"years": ["2020", "2021", "2022", "2023", "2024", "2025", "2026"], "resumen": {"activos": [279621761, 298518803, 238461536, 441448522, 113774841, 105615482, 207640680], "pasivos": [290678511, 311518459, 258735238, 299226871, 329458657, 328196396, 295661813], "patrimonio": [-11056750, -12999656, -20273702, 142221651, -215683816, -222580914, -88021133], "ingresos": [110289154, 136195756, 113998749, 39969601, 19861548, 10500000, 0]}}, "resumen": {"Inversión inicial (CAPEX + capital de trabajo, mes 1)": {"Conservador": 100000000, "Base": 75000000, "Optimista": 60000000}, "Ingresos totales 36 meses": {"Conservador": 263536000, "Base": 425040000, "Optimista": 689400000}, "EBITDA total 36 meses": {"Conservador": -110628000, "Base": 36121200, "Optimista": 229617000}, "EBITDA año 1 (meses 1-12)": {"Conservador": -41400000, "Base": 3600000, "Optimista": 60840000}, "EBITDA año 2 (meses 13-24)": {"Conservador": -32760000, "Base": 15864000, "Optimista": 79020000}, "EBITDA año 3 (meses 25-36)": {"Conservador": -36468000, "Base": 16657200, "Optimista": 89757000}, "Utilidad neta total 36 meses": {"Conservador": -236628000, "Base": -89878800, "Optimista": 48535050}, "Margen EBITDA promedio": {"Conservador": -0.419783255418615, "Base": 0.084983060417843, "Optimista": 0.333067885117494}, "Flujo de caja acumulado del proyecto al mes 36 (sin contar financiación)": {"Conservador": -210628000, "Base": -38878800, "Optimista": 139735050}, "Mes de punto de equilibrio (EBITDA mensual > 0)": {"Conservador": "No alcanza en 36 meses", "Base": 4, "Optimista": 2}, "Mes de payback (recupera la inversión inicial)": {"Conservador": "No recupera en 36 meses", "Base": "No recupera en 36 meses", "Optimista": 14}, "TIR mensual (flujo de caja neto)": {"Conservador": "N/A", "Base": -0.0298653127880014, "Optimista": 0.0812930787582513}, "TIR anualizada (aprox.)": {"Conservador": "N/A", "Base": -0.305000652270083, "Optimista": 1.55458923373902}, "VAN (tasa de descuento 1.5% mensual / ~19.6% anual)": {"Conservador": -184873977.217535, "Base": -48862712.4131535, "Optimista": 90612991.1384391}}, "proy": {"Proy_Conservador": {"ingresos": [1000000, 2000000, 3000000, 4000000, 5000000, 6000000, 7000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8000000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8160000, 8323200, 8323200, 8323200, 8323200, 8323200], "ebitda": [-5550000, -5100000, -4650000, -4200000, -3750000, -3300000, -2850000, -2400000, -2400000, -2400000, -2400000, -2400000, -2760000, -2760000, -2760000, -2760000, -2760000, -2760000, -2760000, -2688000, -2688000, -2688000, -2688000, -2688000, -3069600, -3069600, -3069600, -3069600, -3069600, -3069600, -3069600, -2996160, -2996160, -2996160, -2996160, -2996160], "caja": [-105550000, -110650000, -115300000, -119500000, -123250000, -126550000, -129400000, -131800000, -134200000, -136600000, -139000000, -141400000, -144160000, -146920000, -149680000, -152440000, -155200000, -157960000, -160720000, -163408000, -166096000, -168784000, -171472000, -174160000, -177229600, -180299200, -183368800, -186438400, -189508000, -192577600, -195647200, -198643360, -201639520, -204635680, -207631840, -210628000]}, "Proy_Base": {"ingresos": [2400000, 4800000, 7200000, 9600000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12000000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 12600000, 13230000, 13230000, 13230000, 13230000, 13230000, 13230000, 13230000, 13230000], "ebitda": [-3728000, -2456000, -1184000, 88000, 1360000, 1360000, 1360000, 1360000, 1360000, 1360000, 1360000, 1360000, 1110000, 1110000, 1110000, 1110000, 1428000, 1428000, 1428000, 1428000, 1428000, 1428000, 1428000, 1428000, 1165500, 1165500, 1165500, 1165500, 1499400, 1499400, 1499400, 1499400, 1499400, 1499400, 1499400, 1499400], "caja": [-78728000, -81184000, -82368000, -82280000, -80920000, -79560000, -78200000, -76840000, -75480000, -74120000, -72760000, -71400000, -70290000, -69180000, -68070000, -66960000, -65532000, -64104000, -62676000, -61248000, -59820000, -58392000, -56964000, -55536000, -54370500, -53205000, -52039500, -50874000, -49374600, -47875200, -46375800, -44876400, -43377000, -41877600, -40378200, -38878800]}, "Proy_Optimista": {"ingresos": [6000000, 12000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 18000000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 19800000, 21780000, 21780000, 21780000, 21780000, 21780000, 21780000, 21780000, 21780000, 21780000, 21780000], "ebitda": [-1020000, 2460000, 5940000, 5940000, 5940000, 5940000, 5940000, 5940000, 5940000, 5940000, 5940000, 5940000, 5715000, 5715000, 6759000, 6759000, 6759000, 6759000, 6759000, 6759000, 6759000, 6759000, 6759000, 6759000, 6522750, 6522750, 7671150, 7671150, 7671150, 7671150, 7671150, 7671150, 7671150, 7671150, 7671150, 7671150], "caja": [-61020000, -58560000, -53229000, -47898000, -42567000, -37236000, -31905000, -26574000, -21243000, -15912000, -10581000, -5250000, -65250, 5119500, 10982850, 16846200, 22709550, 28572900, 34436250, 40299600, 46162950, 52026300, 57889650, 63753000, 69462787.5, 75172575, 81628822.5, 88085070, 94541317.5, 100997565, 107453812.5, 113910060, 120366307.5, 126822555, 133278802.5, 139735050]}}};
+</script>
+<script>
+const fmt = n => n===null||n===undefined||isNaN(n) ? "-" : "$" + Math.round(n).toLocaleString("es-CO");
+const fmtPct = n => (n*100).toFixed(1)+"%";
+const COLORS = {dark:"#1F3864", mid:"#2E5395", light:"#8CA9D6", red:"#C00000", amber:"#B8860B", green:"#2E7D32", gray:"#98A2B3"};
+
+/* ---------- simple canvas chart helpers ---------- */
+function lineChart(canvas, series, labels, opts={}){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width = canvas.clientWidth * 2;
+  const H = canvas.height = (opts.height||280) * 2;
+  canvas.style.height = (H/2)+"px";
+  ctx.scale(1,1);
+  const padL=70,padR=20,padT=20,padB=40;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+  let allVals = series.flatMap(s=>s.data).filter(v=>v!==null&&!isNaN(v));
+  let max = Math.max(...allVals, 0), min = Math.min(...allVals, 0);
+  if(max===min){max+=1;min-=1;}
+  const range = max-min;
+  const x = i => padL + (i/(labels.length-1))*plotW;
+  const y = v => padT + plotH - ((v-min)/range)*plotH;
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+  // zero line
+  ctx.strokeStyle="#D0D5DD"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(padL,y(0)); ctx.lineTo(W-padR,y(0)); ctx.stroke();
+  // gridlines + y labels
+  ctx.font="22px Arial"; ctx.fillStyle="#98A2B3"; ctx.textAlign="right";
+  for(let g=0;g<=4;g++){
+    const val = min + (range*g/4);
+    const yy = y(val);
+    ctx.strokeStyle="#F0F2F5"; ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke();
+    ctx.fillText((val/1e6).toFixed(0)+"M", padL-10, yy+7);
+  }
+  // x labels (sparse)
+  ctx.textAlign="center";
+  const step = Math.ceil(labels.length/12);
+  labels.forEach((l,i)=>{ if(i%step===0) ctx.fillText(l, x(i), H-padB+30); });
+  // series
+  series.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=4; ctx.beginPath();
+    s.data.forEach((v,i)=>{ if(v===null)return; const px=x(i),py=y(v); if(i===0||s.data[i-1]===null)ctx.moveTo(px,py); else ctx.lineTo(px,py); });
+    ctx.stroke();
+  });
+}
+function barChart(canvas, series, labels, opts={}){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width = canvas.clientWidth * 2;
+  const H = canvas.height = (opts.height||280) * 2;
+  canvas.style.height = (H/2)+"px";
+  const padL=70,padR=20,padT=20,padB=40;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+  let allVals = series.flatMap(s=>s.data);
+  let max = Math.max(...allVals,0), min = Math.min(...allVals,0);
+  if(max===min){max+=1;min-=1;}
+  const range = max-min;
+  const groupW = plotW/labels.length;
+  const barW = groupW/(series.length+1);
+  const y = v => padT + plotH - ((v-min)/range)*plotH;
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+  ctx.font="22px Arial"; ctx.fillStyle="#98A2B3"; ctx.textAlign="right";
+  for(let g=0;g<=4;g++){
+    const val = min + (range*g/4);
+    const yy = y(val);
+    ctx.strokeStyle="#F0F2F5"; ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke();
+    ctx.fillText((val/1e6).toFixed(0)+"M", padL-10, yy+7);
+  }
+  ctx.strokeStyle="#D0D5DD"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(padL,y(0)); ctx.lineTo(W-padR,y(0)); ctx.stroke();
+  ctx.textAlign="center";
+  labels.forEach((l,i)=>{
+    const gx = padL + i*groupW;
+    series.forEach((s,si)=>{
+      const v = s.data[i];
+      const bx = gx + (si+0.5)*barW;
+      const by = y(Math.max(v,0)), by0 = y(Math.min(v,0));
+      ctx.fillStyle = s.color;
+      ctx.fillRect(bx-barW*0.38, Math.min(by,by0), barW*0.76, Math.abs(by0-by)||2);
+    });
+    ctx.fillStyle="#667085"; ctx.fillText(l, gx+groupW/2, H-padB+30);
+  });
+}
+
+/* ---------- content ---------- */
+const TABS = [
+  {id:"resumen", label:"Resumen ejecutivo"},
+  {id:"historia", label:"Línea de tiempo 2020-2026"},
+  {id:"asercol", label:"Asercol"},
+  {id:"128m", label:"Los $128M / venta de flota"},
+  {id:"capital80", label:"Diferencia real: $171,97M"},
+  {id:"proyecciones", label:"Proyecciones 36 meses"},
+  {id:"pendiente", label:"Info. pendiente"},
+  {id:"valoracion", label:"Valoración", hidden:true},
+];
+
+const nav = document.getElementById("nav");
+const main = document.getElementById("main");
+TABS.forEach((t,i)=>{
+  const b=document.createElement("button");
+  b.textContent=t.label; b.dataset.id=t.id;
+  if(i===0) b.classList.add("active");
+  if(t.hidden){ b.style.display="none"; b.dataset.hiddenTab="1"; }
+  b.onclick=()=>{ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active");
+    document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));
+    document.getElementById("sec-"+t.id).classList.add("active");
+    setTimeout(renderChartsFor(t.id), 10);
+  };
+  nav.appendChild(b);
+});
+document.getElementById("toggleValoracion").onclick = () => {
+  document.querySelectorAll('nav button[data-hidden-tab="1"]').forEach(b => {
+    b.style.display = (b.style.display === "none") ? "inline-block" : "none";
+  });
+};
+
+function section(id, html){
+  const s = document.createElement("section"); s.id="sec-"+id; s.innerHTML = html;
+  if(id==="resumen") s.classList.add("active");
+  main.appendChild(s);
+}
+
+/* RESUMEN */
+section("resumen", `
+<h2>Hallazgo principal de la Fase 1</h2>
+<div class="panel highlight">
+  <p style="margin:0 0 8px;font-size:14px;"><b>Los $126.225.000 netos que pagó el comprador SÍ están identificados</b>: corresponden a la compraventa de la flota (3 lanchas + tráiler) a <b>TRANSPORTES DE MAR SAS</b>, formalizada el 30-jul-2026, con una pérdida contable exacta de $108.872.327,62 para Logismar. Ver pestaña "Los $128M".</p>
+</div>
+<div class="grid">
+  <div class="card kpi"><div class="label">Activos 2026 (reconstruido)</div><div class="value">$207.640.679,95</div><div class="sub">vs. $208,93M informado — reconcilia</div></div>
+  <div class="card kpi"><div class="label">Pasivos 2026</div><div class="value">$295.661.812,22</div><div class="sub">99,9% en una sola cuenta (proveedores, 22050501)</div></div>
+  <div class="card kpi"><div class="label">Patrimonio 2026</div><div class="value" style="color:#C00000;">-$88.021.132,27</div><div class="sub">vs. -$86,73M informado — reconcilia</div></div>
+  <div class="card kpi"><div class="label">Pasivo Asercol — CONFIRMADO</div><div class="value">$295.661.813,22</div><div class="sub">Incluye saldo pre-2020, confirmado por el cliente — 99,9% del pasivo total</div></div>
+  <div class="card kpi"><div class="label">CxC "Otros anticipos" (13309501)</div><div class="value">$123.693.329,77</div><div class="sub">Creado en 1 solo asiento, 31-jul-2026 (NC-1002-1)</div></div>
+  <div class="card kpi"><div class="label">Pago neto recibido comprador</div><div class="value">$126.225.000,00</div><div class="sub">= precio venta flota $127.500.000 − retefuente 1%</div></div>
+</div>
+<h2>Semáforo de riesgos clave</h2>
+<table>
+<tr><th style="text-align:left">Hallazgo</th><th>Riesgo</th></tr>
+<tr><td style="text-align:left">Relación con Asercol (financiador recurrente, sin contrato visible)</td><td><span class="flag rojo">ROJO</span></td></tr>
+<tr><td style="text-align:left">CxC $123.693.329,77 generada por asiento manual sin soporte (Gilberto Perdomo Zambrano)</td><td><span class="flag rojo">ROJO</span></td></tr>
+<tr><td style="text-align:left">Cierre contable masivo del 30-jul-2026 sin trazabilidad documental</td><td><span class="flag rojo">ROJO</span></td></tr>
+<tr><td style="text-align:left">Pasivo con Asercol CONFIRMADO en $295.661.813,22 — más alto que los $209M que la administración pidió verificar; representa prácticamente el 100% del pasivo de la empresa</td><td><span class="flag rojo">ROJO</span></td></tr>
+<tr><td style="text-align:left">Balance general oficial vacío (reconstruido desde auxiliares)</td><td><span class="flag amarillo">AMARILLO</span></td></tr>
+<tr><td style="text-align:left">Venta de flota documentada contablemente, pero sin contrato/factura visible en auxiliar</td><td><span class="flag amarillo">AMARILLO</span></td></tr>
+<tr><td style="text-align:left">Reconciliación matemática del balance reconstruido contra cifras de la administración</td><td><span class="flag verde">VERDE</span></td></tr>
+</table>
+`);
+
+/* HISTORIA */
+section("historia", `
+<h2>Activos, pasivos y patrimonio 2020-2026</h2>
+<div class="chart-wrap"><canvas id="chartBalance"></canvas>
+  <div class="legend">
+    <span><i class="dot" style="background:${COLORS.mid}"></i>Activos</span>
+    <span><i class="dot" style="background:${COLORS.red}"></i>Pasivos</span>
+    <span><i class="dot" style="background:${COLORS.dark}"></i>Patrimonio</span>
+  </div>
+</div>
+<h2>Ingresos operacionales</h2>
+<div class="chart-wrap"><canvas id="chartIngresos"></canvas></div>
+<h3>Lectura</h3>
+<ul>
+<li><b>2020-2021:</b> operación activa, ingresos $110-136M/año, pero patrimonio ya negativo desde el inicio de la serie disponible.</li>
+<li><b>2023:</b> pico de activos ($441M) por el reconocimiento pleno de las 3 lanchas — único año con patrimonio positivo ($142M).</li>
+<li><b>2024-2025:</b> desplome de ingresos casi a cero; patrimonio negativo se profundiza a -$216M y -$223M.</li>
+<li><b>2026:</b> ingresos en $0; la flota se vende, generando una pérdida contable exacta de $108.872.327,62; patrimonio se recupera parcialmente a -$88.021.132,27.</li>
+</ul>
+<p class="note">Balance reconstruido desde los 7 auxiliares contables (BALANCE_GENERAL_LOGISMAR.xlsx estaba vacío). Ver informe Fase 1, Sección 3, para el detalle por cuenta PUC.</p>
+`);
+
+/* ASERCOL */
+section("asercol", `
+<h2>Relación con Asercol S.A.</h2>
+<div class="panel danger"><b>Riesgo: <span class="flag rojo">ROJO</span></b> — financiamiento recurrente de gastos operativos desde 2020, sin contrato visible, mezclado en la misma cuenta contable que proveedores y socios.</div>
+<h3>Roles identificados (no excluyentes)</h3>
+<ul>
+<li><b>Financiador operativo recurrente:</b> decenas de asientos "préstamo de Asercol para pago de nómina/impuestos/cesantías" desde enero 2020.</li>
+<li><b>Acreedor por reintegros y compras</b> de combustible.</li>
+<li><b>Contraparte menor en "Otros anticipos"</b> (2020 y 2024).</li>
+</ul>
+<h3>Saldo acumulado identificable (movimiento neto en cuenta 220505, sin saldo inicial pre-2020)</h3>
+<div class="chart-wrap"><canvas id="chartAsercol"></canvas></div>
+<div class="panel danger">
+<b>Confirmado por el cliente (20-ago-2026): el saldo pre-2020 también es de Asercol.</b> El pasivo total con Asercol queda en <b>$295.661.813,22</b> — prácticamente el 100% del pasivo de la empresa. Composición:
+<ul>
+<li><b>$259.525.563,22 (87,7%)</b>: saldo inicial al 31-dic-2019, sin tercero asignado en el auxiliar — confirmado por el cliente como parte de la deuda con Asercol.</li>
+<li><b>$126.515.086,00 bruto</b>: pasivo generado con Asercol identificado por NIT en 720 movimientos reales de 2020-2026.</li>
+<li>Neteado contra <b>$90.378.836,00</b> pagados en esos mismos años a otros terceros relacionados (Gilberto Perdomo Zambrano, Perdomo Prins & Cía, Claudia Perdomo Prins, Gerardo Osorio Iriarte) desde la misma cuenta de proveedores.</li>
+<li>Resultado neto 2020-2026 de todos los terceros: <b>$36.136.250,00</b>, que sumado al saldo pre-2020 da el total confirmado de $295.661.813,22.</li>
+</ul>
+Esta cifra es <b>más alta</b> que los $209.000.000,00 que la administración había pedido verificar — no menor.
+</div>
+<h3>Los 5 movimientos más grandes con cada tercero en la cuenta 22050501</h3>
+<table>
+<tr><th style="text-align:left">Tercero</th><th>N° mov.</th><th>Débitos</th><th>Créditos</th><th>Neto (pasivo)</th></tr>
+<tr style="background:#FDEAEA;"><td style="text-align:left"><b>(SIN TERCERO — saldo inicial 31-dic-2019)</b></td><td>7</td><td>$0,00</td><td>$1.771.091.509,90*</td><td><b>$259.525.563,22</b></td></tr>
+<tr><td style="text-align:left">AGENCIA DE ADUANAS ASERCOL S.A. NIVEL 1</td><td>719</td><td>$530.477.858,22</td><td>$656.481.632,22</td><td>$126.003.774,00</td></tr>
+<tr><td style="text-align:left">AGENCIA DE ADUANAS ASERCOL S.A. (variante sin "NIVEL 1")</td><td>1</td><td>$0,00</td><td>$511.312,00</td><td>$511.312,00</td></tr>
+<tr><td style="text-align:left">DABILBERTO BLANCO HERRERA</td><td>9</td><td>$3.069.788,00</td><td>$12.664.028,00</td><td>$9.594.240,00</td></tr>
+<tr><td style="text-align:left">GERARDO ENRIQUE OSORIO IRIARTE</td><td>21</td><td>$30.787.676,00</td><td>$6.472.410,00</td><td>-$24.315.266,00</td></tr>
+<tr><td style="text-align:left">CLAUDIA PATRICIA PERDOMO PRINS</td><td>1</td><td>$22.910.060,00</td><td>$0,00</td><td>-$22.910.060,00</td></tr>
+<tr><td style="text-align:left">PERDOMO PRINS &amp; CIA S. EN C.</td><td>3</td><td>$21.268.293,00</td><td>$1.824.693,00</td><td>-$19.443.600,00</td></tr>
+<tr><td style="text-align:left">GILBERTO PERDOMO ZAMBRANO</td><td>1</td><td>$15.445.114,00</td><td>$0,00</td><td>-$15.445.114,00</td></tr>
+</table>
+<p class="note">*El "saldo inicial" de $259.525.563,22 aparece repetido cada año (arrastrado del cierre del año anterior) en el auxiliar — por eso los $1.771 millones de "créditos" en esa fila NO son movimiento real, es un artefacto de la forma en que se armaron los 7 auxiliares anuales; el valor real de ese componente es el saldo mismo: $259.525.563,22. Ver la hoja "Pasivo_220505_TODOS_terceros" del Excel de cifras exactas para las 1.974 filas completas de todos los terceros de esta cuenta.</p>
+<h3>Documentos pendientes para validar el saldo</h3>
+<ul>
+<li>Facturas o cuentas de cobro de cada "préstamo"/reintegro.</li>
+<li>Contrato o convenio de financiamiento.</li>
+<li>Certificación de saldo firmada por Asercol.</li>
+<li>Conciliación de cuentas recíproca a la fecha de corte.</li>
+</ul>
+`);
+
+/* 128M */
+section("128m", `
+<h2>Reconstrucción de los pagos de Transportes de Mar SAS</h2>
+<div class="flow-steps">
+  <div class="flow-step"><div class="date">10-ene-2026</div><div class="desc">Anticipo recibido de Transportes de Mar SAS por "compra de lancha" (RC-126-4), registrado como pago no justificado. <span class="amt">$12.750.000</span></div></div>
+  <div class="flow-step"><div class="date">30-ene-2026</div><div class="desc">Segundo pago recibido, también registrado como no justificado (RC-127-8). <span class="amt">$113.475.000</span></div></div>
+  <div class="flow-step"><div class="date">30-jul-2026</div><div class="desc">Se dan de baja Lancha Alt. II, III, IV y tráiler (valor bruto $332.989.835,62 − depreciación acumulada $96.617.508,00 = valor neto en libros $236.372.327,62) y se registra CxC a Transportes de Mar SAS por venta de activos (NC-1095-3). <span class="amt">$127.500.000,00 (precio) / -$108.872.327,62 (pérdida exacta)</span></div></div>
+  <div class="flow-step"><div class="date">30-jul-2026</div><div class="desc">Se cruzan los pagos de enero contra la CxC de la venta, neto de retefuente 1% (NC-1092-0). <span class="amt">Cierra el círculo</span></div></div>
+</div>
+<h3>Activos dados de baja</h3>
+<table>
+<tr><th style="text-align:left">Activo</th><th>Valor bruto</th><th>Depreciación</th><th>Valor neto</th></tr>
+<tr><td style="text-align:left">Lancha Alternativa II</td><td>$137.955.353</td><td>$24.835.017</td><td>$113.120.336</td></tr>
+<tr><td style="text-align:left">Lancha Alternativa III</td><td>$140.239.027</td><td>$71.782.491</td><td>$68.456.536</td></tr>
+<tr><td style="text-align:left">Lancha Alternativa IV</td><td>$48.795.455</td><td>$0 (no depreciada)</td><td>$48.795.455</td></tr>
+<tr><td style="text-align:left">Tráiler para botes 2015</td><td>$6.000.000</td><td>$0</td><td>$6.000.000</td></tr>
+<tr style="font-weight:700;"><td style="text-align:left">TOTAL</td><td>$332.989.835</td><td>$96.617.508</td><td>$236.372.327</td></tr>
+</table>
+<div class="panel highlight" style="margin-top:16px;">
+<b>Conclusión:</b> "Los $126.225.000,00 netos ($127.500.000,00 brutos) corresponden al pago por la COMPRAVENTA DE LA FLOTA, y deberían tratarse como ingreso por venta de activos fijos — NO como anticipo del negocio, NO pago a socios, NO parte del precio de las acciones — salvo que el contrato marco indique lo contrario." Pendiente: contrato de compraventa, factura, transferencia de matrícula DIMAR.
+<h3 style="margin-top:14px;">¿Cómo minimizar/gestionar la pérdida contable de $108.872.327,62?</h3>
+<ul>
+<li><b>Efecto tributario (lo más accionable ahora):</b> una pérdida en venta de activos fijos es, en principio, deducible del impuesto de renta si la venta es real y está soportada — reduce la renta líquida gravable del año. Falta la declaración de renta 2026 para confirmar cómo se declaró y si se aprovechó.</li>
+<li><b>Verificar el precio de venta contra un avalúo o valor de mercado</b>: si $127.500.000 fue un precio bajo frente al valor real de las lanchas, hay margen para sustentar (o renegociar) un precio mayor antes de que la operación quede en firme fiscal y contablemente — pero esto exige el contrato de compraventa, que sigue pendiente.</li>
+<li><b>La pérdida ya está contabilizada</b> (30-jul-2026); no se puede "deshacer" sin reversar el asiento. Lo que sí se puede gestionar de aquí en adelante es el riesgo que representa para el comprador de la sociedad — ver la pestaña "Los ~$80M" y la recomendación de esta sección.</li>
+</ul>
+</div>
+`);
+
+/* CAPITAL 80M */
+section("capital80", `
+<h2>La diferencia real confirmada: $171.968.483,45</h2>
+<p class="note">Confirmado por el cliente el 20-ago-2026: el pasivo con Asercol incluye el saldo pre-2020, por lo que la deuda total con Asercol es $295.661.813,22 (prácticamente el 100% del pasivo de la empresa) — más alta que los $209.000.000,00 que la administración había pedido verificar inicialmente. Ver <b>Cifras_Exactas_Logismar.xlsx</b> para el detalle transacción por transacción.</p>
+<div class="grid">
+  <div class="card kpi"><div class="label">CxC "Otros anticipos" (13309501)</div><div class="value">$123.693.329,77</div></div>
+  <div class="card kpi" style="border-left:4px solid #1F3864;"><div class="label">Pasivo Asercol — CONFIRMADO</div><div class="value">$295.661.813,22</div><div class="sub">Incluye saldo pre-2020, confirmado por el cliente</div></div>
+  <div class="card kpi" style="border-left:4px solid #C00000;"><div class="label">Diferencia neta a resolver</div><div class="value">$171.968.483,45</div><div class="sub">$295.661.813,22 − $123.693.329,77</div></div>
+</div>
+<div class="panel danger">
+<b>La diferencia real ($171.968.483,45) es más del doble de lo que originalmente se manejaba como referencia (~$80M).</b> Además, la CxC de $123.693.329,77 está a nombre de una <b>persona natural</b> (Gilberto Perdomo Zambrano), mientras el pasivo es de <b>Asercol S.A.</b> (persona jurídica) — jurídicamente NO se compensan solas sin cesión o novación expresa. Con este monto confirmado, la prioridad ya no es "verificar la cifra" sino estructurar la operación para que el comprador no absorba esta diferencia.
+</div>
+<h3>Evolución de la cifra a lo largo del análisis</h3>
+<table>
+<tr><th style="text-align:left">Momento</th><th>Pasivo Asercol</th><th>Menos CxC $123.693.329,77</th><th>Diferencia neta</th></tr>
+<tr><td style="text-align:left">Cifra de referencia inicial (administración, a verificar)</td><td>$209.000.000,00</td><td>$123.693.329,77</td><td>$85.306.670,23</td></tr>
+<tr><td style="text-align:left">Solo lo identificado por nombre en movimientos 2020-2026</td><td>$126.515.086,00</td><td>$123.693.329,77</td><td>$2.821.756,23</td></tr>
+<tr style="background:#FDEAEA;"><td style="text-align:left"><b>CONFIRMADO por el cliente — incluye saldo pre-2020</b></td><td><b>$295.661.813,22</b></td><td>$123.693.329,77</td><td><b>$171.968.483,45</b></td></tr>
+</table>
+<h3>5 alternativas para no heredar esta deuda</h3>
+<table>
+<tr><th style="text-align:left">Alternativa</th><th style="text-align:left">Efecto para el comprador</th></tr>
+<tr><td style="text-align:left"><b>A. Saneamiento previo a cargo del vendedor</b></td><td style="text-align:left">El vendedor resuelve el pasivo (pago/capitalización/condonación) antes del cierre, como condición suspensiva.</td></tr>
+<tr><td style="text-align:left"><b>B. Precio condicionado / escrow</b></td><td style="text-align:left">Se retiene $171.968.483,45 del precio (la diferencia neta confirmada) hasta resolver el pasivo con Asercol y la cobrabilidad de la CxC.</td></tr>
+<tr><td style="text-align:left"><b>C. Capitalización de pasivos antes del cierre</b></td><td style="text-align:left">Asercol/socios convierten la acreencia en capital (acta + aumento de capital). Extingue el pasivo, cambia la composición accionaria.</td></tr>
+<tr><td style="text-align:left"><b>D. Compra de activos, no de acciones (asset deal)</b></td><td style="text-align:left">El comprador NO hereda pasivos históricos, pero puede perder permisos/trayectoria a nombre de la sociedad.</td></tr>
+<tr><td style="text-align:left"><b>E. Garantías e indemnidad del vendedor</b></td><td style="text-align:left">Compra de acciones tal cual, pero el vendedor garantiza el monto exacto y reembolsa cualquier exceso.</td></tr>
+</table>
+<div class="panel highlight">
+<b>Recomendación:</b> con la deuda con Asercol confirmada en $295.661.813,22, la diferencia neta a resolver son $171.968.483,45. Recomendamos combinar A + B + E — negociar la capitalización o extinción de esta deuda antes del cierre (A); retener en escrow los $171.968.483,45 hasta que se resuelva formalmente (B); y blindar cualquier remanente con indemnidad específica de los vendedores (E).
+</div>
+
+<h2>Opción 1 — Capitalizar la deuda con Asercol</h2>
+<p class="note">Capitalizar significa que Asercol deja de ser acreedor y pasa a ser accionista: su acreencia se convierte en aportes de capital de la sociedad, mediante acta de asamblea y aumento de capital suscrito y pagado por compensación de la acreencia. El pasivo desaparece del balance y se convierte en patrimonio.</p>
+<h3>Escenario 1A — Capitalización total ($295.661.813,22)</h3>
+<table>
+<tr><th style="text-align:left">Partida</th><th>Antes</th><th>Después</th><th>Variación</th></tr>
+<tr><td style="text-align:left">Activos</td><td>$207.640.679,95</td><td>$207.640.679,95</td><td>$0,00</td></tr>
+<tr><td style="text-align:left">Pasivos</td><td>$295.661.812,22</td><td>≈ $0,00</td><td>-$295.661.812,22</td></tr>
+<tr style="background:#E8F5E9;"><td style="text-align:left"><b>Patrimonio</b></td><td><b>-$88.021.132,27</b></td><td><b>$207.640.680,95</b></td><td><b>+$295.661.813,22</b></td></tr>
+</table>
+<p class="note">El pasivo restante (~$0) corresponde a cuentas menores no relacionadas con Asercol (aportes de seguridad social, ~$300.074 netos). El patrimonio queda prácticamente igual al total de activos porque casi todo el pasivo desaparece.</p>
+<h3>Escenario 1B — Capitalización parcial (solo la diferencia neta, $171.968.483,45)</h3>
+<table>
+<tr><th style="text-align:left">Partida</th><th>Antes</th><th>Después</th></tr>
+<tr><td style="text-align:left">Pasivos</td><td>$295.661.812,22</td><td>$123.693.328,77</td></tr>
+<tr><td style="text-align:left">Patrimonio</td><td>-$88.021.132,27</td><td>$83.947.351,18</td></tr>
+</table>
+<p class="note">El pasivo remanente ($123.693.328,77) queda casi exactamente igual a la CxC de $123.693.329,77 — si además se logra ceder/novar esa CxC a favor de Asercol (compensación formal, no automática), ambas partidas se cancelan entre sí y el resultado final converge con el Escenario 1A.</p>
+<div class="panel highlight">
+<b>Lo que falta para ejecutar cualquiera de los dos escenarios:</b> capital social actual de Logismar (suscrito y pagado), número de acciones en circulación y valor nominal — sin esos datos no se puede calcular con exactitud qué porcentaje de la sociedad terminaría en manos de Asercol tras la capitalización. Con una deuda de este tamaño frente a un capital social típicamente pequeño en una SAS, es razonable esperar que Asercol termine como accionista mayoritario si se capitaliza el 100%; por eso el Escenario 1B (parcial) puede ser preferible para el vendedor si quiere conservar el control.
+</div>
+
+<h2>Opción 2 — Repartir la diferencia entre comprador y vendedor</h2>
+<p class="note">En vez de que el comprador asuma el 100% (vía escrow) o el vendedor el 100% (vía saneamiento previo), se puede negociar un reparto de los $171.968.483,45 entre las dos partes — por ejemplo, como descuento parcial del precio de compra en vez de retención total.</p>
+<table>
+<tr><th style="text-align:left">Reparto</th><th>Asume el vendedor</th><th>Asume el comprador</th></tr>
+<tr><td style="text-align:left">100% vendedor / 0% comprador</td><td>$171.968.483,45</td><td>$0,00</td></tr>
+<tr style="background:#E8F5E9;"><td style="text-align:left"><b>70% vendedor / 30% comprador</b></td><td><b>$120.377.938,42</b></td><td><b>$51.590.545,03</b></td></tr>
+<tr><td style="text-align:left">50% vendedor / 50% comprador</td><td>$85.984.241,72</td><td>$85.984.241,72</td></tr>
+<tr><td style="text-align:left">30% vendedor / 70% comprador</td><td>$51.590.545,03</td><td>$120.377.938,42</td></tr>
+<tr><td style="text-align:left">0% vendedor / 100% comprador</td><td>$0,00</td><td>$171.968.483,45</td></tr>
+</table>
+<div class="panel highlight">
+<b>Punto de partida sugerido para negociar: 70% vendedor / 30% comprador.</b> La deuda con Asercol se originó y creció bajo la administración de los vendedores, antes de la venta — es razonable que asuman la mayor parte. El 30% que quedaría a cargo del comprador ($51.590.545,03) reconoce que él también se beneficia de quedarse con una sociedad ya operativa, con trayectoria y sin tener que constituir una nueva desde cero. El 50/50 puede servir como punto de cierre si el vendedor no acepta el 70/30.
+</div>
+`);
+
+/* PROYECCIONES */
+section("proyecciones", `
+<h2>Proyección financiera a 36 meses</h2>
+<p class="note">Modelo parametrizable — ver <b>Modelo_Financiero_Logismar.xlsx</b> para ajustar los supuestos (ingreso en régimen, costos, capital inicial) con las especificaciones reales de la flota del comprador. Basado en ingresos históricos reales 2020-2022 (única operación comercial activa disponible en los auxiliares).</p>
+<div class="scenario-toggle" id="scenToggle">
+  <button data-s="Proy_Conservador" class="active">Conservador</button>
+  <button data-s="Proy_Base">Base</button>
+  <button data-s="Proy_Optimista">Optimista</button>
+</div>
+<div class="chart-wrap"><h3 style="margin-top:0;">Ingresos y EBITDA mensual</h3><canvas id="chartProy"></canvas>
+  <div class="legend"><span><i class="dot" style="background:${COLORS.mid}"></i>Ingresos</span><span><i class="dot" style="background:${COLORS.green}"></i>EBITDA</span></div>
+</div>
+<div class="chart-wrap"><h3 style="margin-top:0;">Caja acumulada del proyecto (sin financiación)</h3><canvas id="chartCaja"></canvas></div>
+<h3>Comparativo de escenarios</h3>
+<table id="tblResumen"></table>
+`);
+
+/* PENDIENTE */
+section("pendiente", `
+<h2>Información pendiente para cerrar el due diligence</h2>
+<table>
+<tr><th style="text-align:left">Documento</th><th style="text-align:left">Para qué sirve</th><th>Prioridad</th></tr>
+<tr><td style="text-align:left">Balance general oficial con contenido</td><td style="text-align:left">Validar el balance reconstruido</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Contrato de compraventa de las lanchas</td><td style="text-align:left">Confirmar precio, condiciones y si incluye la sociedad</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Extractos bancarios ene-jul 2026</td><td style="text-align:left">Verificar el origen de los $126,2M</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Soporte del comprobante NC-1002-1</td><td style="text-align:left">Naturaleza real del saldo con Gilberto Perdomo Zambrano</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Certificación de saldo de Asercol (por escrito)</td><td style="text-align:left">Formalizar para el expediente legal el pasivo de $295.661.813,22 ya confirmado verbalmente por el cliente</td><td><span class="flag amarillo">Media</span></td></tr>
+<tr><td style="text-align:left">Detalle del saldo inicial pre-2020</td><td style="text-align:left">Cerrar la brecha del pasivo con Asercol</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Declaraciones de renta 2020-2026</td><td style="text-align:left">Consistencia fiscal y deducibilidad de la pérdida en venta</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Certificado de tradición DIMAR de las lanchas</td><td style="text-align:left">Confirmar titularidad y fecha real de transferencia</td><td><span class="flag rojo">Alta</span></td></tr>
+<tr><td style="text-align:left">Actas de asamblea 2020-2026</td><td style="text-align:left">Decisiones societarias sobre préstamos y venta de activos</td><td><span class="flag amarillo">Media</span></td></tr>
+<tr><td style="text-align:left">Certificado de existencia de Asercol y Transportes de Mar</td><td style="text-align:left">Evaluar vinculación económica</td><td><span class="flag amarillo">Media</span></td></tr>
+<tr><td style="text-align:left">Especificaciones reales de la flota del comprador</td><td style="text-align:left">Calibrar los supuestos del modelo de proyección</td><td><span class="flag amarillo">Media</span></td></tr>
+</table>
+<h2 style="margin-top:32px;">Próximos pasos (Fase 3)</h2>
+<ul>
+<li>Investigación normativa DIMAR / Superintendencia de Transporte y matriz de permisos.</li>
+<li>Checklist legal, laboral y contractual completo.</li>
+<li>Valoración formal de la sociedad (patrimonial, múltiplos, flujo descontado, valor estratégico).</li>
+<li>Estrategia de negociación y redacción de cláusulas de escrow/indemnidad.</li>
+</ul>
+`);
+
+/* VALORACIÓN (pestaña oculta) */
+section("valoracion", `
+<h2>¿Cuánto vale Logística Marítima del Caribe SAS?</h2>
+<p class="note">Pestaña privada — oculta del menú por defecto. Actívala con el botón "···" junto a la fecha del encabezado cuando quieras mostrarla en una presentación.</p>
+
+<h3>1. Método patrimonial</h3>
+<table>
+<tr><th style="text-align:left">Escenario</th><th>Patrimonio</th></tr>
+<tr><td style="text-align:left">Contable actual (sin sanear)</td><td style="color:#C00000;">-$88.021.132,27</td></tr>
+<tr style="background:#E8F5E9;"><td style="text-align:left"><b>Ajustado tras capitalizar la deuda con Asercol</b></td><td><b>$207.640.680,95</b></td></tr>
+</table>
+<p class="note">El método patrimonial puro da un valor prácticamente nulo o negativo hoy. Solo tras resolver el pasivo con Asercol (Opción 1 de la pestaña anterior) el patrimonio se vuelve positivo y cercano al valor de los activos totales.</p>
+
+<h3>2. Flujo de caja descontado (36 meses, del modelo de proyección)</h3>
+<table>
+<tr><th style="text-align:left">Escenario</th><th>VAN (36 meses, tasa 19,6% anual)</th></tr>
+<tr><td style="text-align:left">Conservador</td><td style="color:#C00000;">-$184.873.977,22</td></tr>
+<tr><td style="text-align:left">Base</td><td style="color:#B8860B;">-$48.862.712,41</td></tr>
+<tr style="background:#E8F5E9;"><td style="text-align:left">Optimista</td><td><b>$90.612.991,14</b></td></tr>
+</table>
+<p class="note">Es el valor presente de la operación reactivada durante 36 meses, sin incluir valor terminal más allá del mes 36 ni el valor de los activos que quedan. Depende totalmente de los supuestos de ingresos (ver pestaña Proyecciones) — con la flota real del comprador este número puede cambiar mucho.</p>
+
+<h3>3. Valor combinado por escenario = Patrimonio ajustado + VAN de la operación futura</h3>
+<p class="note">Fórmula: <b>Valor total = Patrimonio ajustado (tras capitalizar Asercol) + VAN a 36 meses del escenario</b>. El patrimonio ajustado es el mismo en los tres casos ($207.640.680,95, ver arriba); lo único que cambia es el VAN de cada escenario operativo (pestaña Proyecciones).</p>
+<table>
+<tr><th style="text-align:left">Escenario</th><th>Patrimonio ajustado</th><th>+ VAN del escenario</th><th>= Valor total</th></tr>
+<tr><td style="text-align:left">Conservador</td><td>$207.640.680,95</td><td>-$184.873.977,22</td><td><b>$22.766.703,73</b></td></tr>
+<tr style="background:#E8F5E9;"><td style="text-align:left"><b>Base</b></td><td>$207.640.680,95</td><td>-$48.862.712,41</td><td><b>$158.777.968,54</b></td></tr>
+<tr><td style="text-align:left">Optimista</td><td>$207.640.680,95</td><td>$90.612.991,14</td><td><b>$298.253.672,09</b></td></tr>
+</table>
+
+<h3>4. Valor estratégico (cualitativo, NO incluido en la tabla de arriba)</h3>
+<ul>
+<li><b>Permisos y trámites DIMAR ya tramitados</b> (si están vigentes o son renovables): evita empezar de cero. Como referencia, el modelo usó $25-40 millones como CAPEX de "puesta a punto y trámites" para una operación nueva — ese es un piso aproximado de lo que costaría no tener la sociedad.</li>
+<li><b>Trayectoria y marca</b> en el mercado de transporte marítimo de carga en Cartagena.</li>
+<li><b>Clientes y relaciones comerciales</b> existentes (pendiente de listado — ver Info. pendiente).</li>
+<li>No cuantificado con precisión — requiere el checklist legal/comercial de la Fase 3.</li>
+</ul>
+
+<h3>5. Múltiplos de mercado</h3>
+<p class="note">No disponible. No hay transacciones comparables de empresas de transporte marítimo de carga en Colombia con información pública suficiente. <b>No se debe estimar un múltiplo sin una fuente real</b> — queda como información pendiente.</p>
+
+<h3>Rango de valoración (calculado a partir de la tabla del punto 3, no escrito a mano)</h3>
+<div class="grid">
+  <div class="card kpi"><div class="label">Piso = valor del escenario Conservador</div><div class="value" style="color:#C00000;">$22.766.703,73</div><div class="sub">MAX(0, MIN(los 3 valores combinados))</div></div>
+  <div class="card kpi" style="border-left:4px solid #1F3864;"><div class="label">Punto medio = valor del escenario Base</div><div class="value">$158.777.968,54</div><div class="sub">Referencia central de negociación</div></div>
+  <div class="card kpi"><div class="label">Techo = valor del escenario Optimista</div><div class="value" style="color:#2E7D32;">$298.253.672,09</div><div class="sub">MAX(los 3 valores combinados)</div></div>
+</div>
+<div class="panel highlight">
+Este rango sale directamente de sumar el patrimonio ajustado (pestaña "Diferencia real: $171,97M", Opción 1) con el VAN de cada escenario operativo (pestaña Proyecciones). No incluye valor estratégico (no cuantificado) ni prima de múltiplos de mercado (sin datos comparables). Es un punto de partida para negociar, no una tasación formal — para eso se necesita el checklist de la Fase 3 completo. La misma fórmula está en la hoja "Valoracion" del Excel del modelo (oculta), con celdas que se recalculan si cambian los supuestos.
+</div>
+`);
+
+/* ---- render charts ---- */
+function renderChartsFor(id){ return ()=>{
+  if(id==="historia"){
+    lineChart(document.getElementById("chartBalance"), [
+      {data:DATA.hist.resumen.activos, color:COLORS.mid},
+      {data:DATA.hist.resumen.pasivos, color:COLORS.red},
+      {data:DATA.hist.resumen.patrimonio, color:COLORS.dark},
+    ], DATA.hist.years);
+    barChart(document.getElementById("chartIngresos"), [{data:DATA.hist.resumen.ingresos, color:COLORS.green}], DATA.hist.years);
+  }
+  if(id==="asercol"){
+    const asercol = [-3587514,19679473,-10095973,2033723,55235030,150615086,126515086];
+    barChart(document.getElementById("chartAsercol"), [{data:asercol, color:COLORS.dark}], DATA.hist.years);
+  }
+  if(id==="proyecciones"){ drawProy(currentScenario); renderResumenTable(); }
+}}
+
+let currentScenario = "Proy_Conservador";
+document.getElementById("scenToggle")?.addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  document.querySelectorAll("#scenToggle button").forEach(b=>b.classList.remove("active"));
+  e.target.classList.add("active");
+  currentScenario = e.target.dataset.s;
+  drawProy(currentScenario);
+});
+
+function drawProy(s){
+  const d = DATA.proy[s];
+  const labels = Array.from({length:36},(_,i)=>"M"+(i+1));
+  lineChart(document.getElementById("chartProy"), [
+    {data:d.ingresos, color:COLORS.mid},
+    {data:d.ebitda, color:COLORS.green},
+  ], labels, {height:260});
+  lineChart(document.getElementById("chartCaja"), [{data:d.caja, color:COLORS.dark}], labels, {height:220});
+}
+
+function renderResumenTable(){
+  const tbl = document.getElementById("tblResumen");
+  if(tbl.dataset.done) return;
+  tbl.dataset.done = "1";
+  const rows = Object.entries(DATA.resumen);
+  let html = "<tr><th style='text-align:left'>Indicador</th><th>Conservador</th><th>Base</th><th>Optimista</th></tr>";
+  const lc = label => label.toLowerCase();
+  rows.forEach(([label,vals])=>{
+    const isPct = lc(label).includes("tir") || lc(label).includes("margen");
+    const isMonth = lc(label).includes("mes de");
+    const fmtv = v => {
+      if (typeof v !== "number") return v;
+      if (isMonth) return "Mes " + v;
+      if (isPct) return fmtPct(v);
+      return fmt(v);
+    };
+    html += `<tr><td style="text-align:left">${label}</td><td>${fmtv(vals.Conservador)}</td><td>${fmtv(vals.Base)}</td><td>${fmtv(vals.Optimista)}</td></tr>`;
+  });
+  tbl.innerHTML = html;
+}
+
+renderChartsFor("resumen")();
+window.addEventListener("resize", ()=>{ const active = document.querySelector("nav button.active").dataset.id; renderChartsFor(active)(); });
+</script>
+</body>
+</html>
